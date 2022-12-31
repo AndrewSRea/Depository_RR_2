@@ -1,0 +1,42 @@
+{% extends 'main.html' %} 
+
+{% block content %}
+
+  <div class="room-container">
+
+    <div >
+
+      <h1>{{ review.artist }} - {{ review.album }}</h1>
+
+      <p>{{ review.content }}</p>
+
+      <div class="comment-wrapper">
+        <h3>Added Reviews</h3>
+        <hr>
+
+        {% for added_review in added_reviews %} 
+          <div>
+            {% if request.user == added_review.user %} 
+              <a href="{% url 'delete-added-review' added_review.id %}">Delete</a>
+            {% endif %} 
+            <small>{{ added_review.user }} {{ added_review.created|timesince }} ago</small>
+            <p>{{ added_review.body }}</p>
+            <hr>
+          </div>
+        {% endfor %} 
+      </div>
+
+      {% if request.user.is_authenticated %}
+        <div class="comment-form">
+          <form method="POST" action="">
+            {% csrf_token %} 
+            <input type="text" name="body" placeholder="Add your review here..." />
+          </form>
+        </div>
+      {% endif %} 
+
+    </div>
+
+  </div>
+
+{% endblock content %} 
