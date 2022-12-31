@@ -1,0 +1,81 @@
+{% extends 'main.html' %} 
+
+{% block content %}
+
+  <style>
+    .home-container {
+      display: grid;
+      grid-template-columns: 1fr 3fr 1fr;
+    }
+  </style>
+
+  <div class="home-container">
+
+    <div>
+      <h3>Highest Rated</h3>
+      <hr>
+      {% for review in highest_list %} 
+        <div>
+          <p><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a> {{ review.rating }}</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div>
+      <!-- Will this work near the search bar (in `navbar.html`)? (Or to the left of the "Create a Review" button?) -->
+      <!-- <h5>{{ reviews_count }} Reviews Created</h5> -->
+
+      <a href="{% url 'create-review' %}">Create a Review</a>
+
+      <div>
+        {% for review in reviews %} 
+          <div>
+            {% if request.user == review.author %}
+              <a href="{% url 'update-review' review.id %}">Edit</a>
+              <a href="{% url 'delete-review' review.id %}">Delete</a>
+            {% endif %} 
+            <h5>{{ review.id }} -- <a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></h5>
+            <span>{{ review.author.username }}</span>
+            <hr>
+          </div>
+        {% endfor %}  
+      </div>
+    </div>
+
+    <!-- ** For your true "Record Review" build: An "About" window, and the "Recent Activity"
+            on Your Reviews" will be viewable through `user.is_authenticated`. ** -->
+    <!-- <div>
+      <div>
+        <h3>How Record Review Works</h3>
+        <p>
+          Craft beer thundercats woke normcore slow-carb schlitz. Messenger bag knausgaard 
+          farm-to-table letterpress lo-fi. Meh humblebrag jianbing, stumptown freegan big 
+          mood DIY cronut tbh air plant bicycle rights readymade. Kale chips copper mug 
+          organic tofu sus hammock fingerstache hexagon salvia readymade 90's williamsburg 
+          marfa meditation.
+        </p>
+      </div> -->
+
+    <div>
+      <h3>Recent Activity</h3>
+      <hr>
+      <!-- Play around with this and configure it so the artist/album shows -->
+      {% for added_review in added_reviews %} 
+        <div>
+          <small>{{ added_review.user }} {{ added_review.created|timesince }}</small>
+          <small>added a {{ added_review.rating }} rating and this review:</small>
+          <p>{{ added_review }}</p>
+          {% if request.user == added_review.user %} 
+            <a href="{% url 'delete-added-review' added_review.id %}">Delete</a>
+          {% endif %} 
+          <hr>
+        </div>
+      {% endfor %} 
+    </div>
+
+    <!-- Ending <div> for the right column -->
+    <!-- </div> -->
+
+  </div>
+
+{% endblock %} 
