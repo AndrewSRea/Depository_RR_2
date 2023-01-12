@@ -73,7 +73,7 @@ def home(request):
 
   reviews = Review.objects.filter(Q(artist__icontains=q) | Q(album__icontains=q))
 
-  added_reviews = AddedReview.objects.all()
+  added_reviews = AddedReview.objects.all().order_by('-updated', '-created')
 
   # if you want to add a header: <h5>{{reviews_count}} Reviews Created</h5>
   # pass `'reviews_count': reviews_count` in the `context` below
@@ -112,6 +112,26 @@ def review(request, pk):
   return render(request, 'base/review.html', context)
 
 
+def userProfile(request, pk):
+  user = User.objects.get(id=pk)
+  reviews = user.review_set.all()
+  added_reviews = user.addedreview_set.all()
+  highest_list = user.review_set.all().order_by('-rating')
+  lowest_list = user.review_set.all().order_by('rating')
+  a_z_artist_list = user.review_set.all().order_by('artist')
+  #a_z_album_list =
+
+  context = {
+    'user': user, 
+    'reviews': reviews, 
+    'added_reviews': added_reviews,
+    'highest_list': highest_list, 
+    'lowest_list': lowest_list, 
+    'a_z_artist_list': a_z_artist_list,
+    }
+  return render(request, 'base/profile.html', context)
+
+
 # Create a Review form
 @login_required(login_url='login')
 def createReview(request):
@@ -119,7 +139,9 @@ def createReview(request):
   if request.method == 'POST':
     form = ReviewForm(request.POST)
     if form.is_valid():
-      form.save()
+      review = form.save(commit=False)
+      review.author = request.user
+      review.save()
       return redirect('home')
 
   context = {'form': form}
