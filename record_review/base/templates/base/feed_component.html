@@ -1,0 +1,13 @@
+<div>
+  {% for review in reviews %} 
+    <div>
+      {% if request.user == review.author %}
+        <a href="{% url 'update-review' review.id %}">Edit</a>
+        <a href="{% url 'delete-review' review.id %}">Delete</a>
+      {% endif %} 
+      <h5>{{ review.id }} -- <a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></h5>
+      <a href="{% url 'user-profile' review.author.id %}">{{ review.author.username }}</a>
+      <hr>
+    </div>
+  {% endfor %}  
+</div>
