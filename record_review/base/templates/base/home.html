@@ -12,13 +12,7 @@
   <div class="home-container">
 
     <div>
-      <h3>Highest Rated</h3>
-      <hr>
-      {% for review in highest_list %} 
-        <div>
-          <p><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a> {{ review.rating }}</p>
-        </div>
-      {% endfor %}
+      {% include 'base/list_component.html' %} 
     </div>
 
     <div>
@@ -27,21 +21,11 @@
 
       <a href="{% url 'create-review' %}">Create a Review</a>
 
-      <div>
-        {% for review in reviews %} 
-          <div>
-            {% if request.user == review.author %}
-              <a href="{% url 'update-review' review.id %}">Edit</a>
-              <a href="{% url 'delete-review' review.id %}">Delete</a>
-            {% endif %} 
-            <h5>{{ review.id }} -- <a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></h5>
-            <span>{{ review.author.username }}</span>
-            <hr>
-          </div>
-        {% endfor %}  
-      </div>
+      {% include 'base/feed_component.html' %} 
+
     </div>
 
+    <!-- ** ADD THE "ABOUT" WINDOW TO THE LEFT COLUMN ** -->
     <!-- ** For your true "Record Review" build: An "About" window, and the "Recent Activity"
             on Your Reviews" will be viewable through `user.is_authenticated`. ** -->
     <!-- <div>
@@ -57,20 +41,7 @@
       </div> -->
 
     <div>
-      <h3>Recent Activity</h3>
-      <hr>
-      <!-- Play around with this and configure it so the artist/album shows -->
-      {% for added_review in added_reviews %} 
-        <div>
-          <small>{{ added_review.user }} {{ added_review.created|timesince }}</small>
-          <small>added a {{ added_review.rating }} rating and this review:</small>
-          <p>{{ added_review }}</p>
-          {% if request.user == added_review.user %} 
-            <a href="{% url 'delete-added-review' added_review.id %}">Delete</a>
-          {% endif %} 
-          <hr>
-        </div>
-      {% endfor %} 
+      {% include 'base/activity_component.html' %} 
     </div>
 
     <!-- Ending <div> for the right column -->
