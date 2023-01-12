@@ -1,0 +1,8 @@
+<h3>Highest Rated</h3>
+<hr>
+ 
+{% for review in highest_list %} 
+  <div>
+    <p><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a> {{ review.rating }}</p>
+  </div>
+{% endfor %}
