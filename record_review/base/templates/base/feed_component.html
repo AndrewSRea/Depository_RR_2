@@ -1,13 +1,57 @@
-<div>
+{% for review in reviews %} 
+  <div class="card mb-3">
+    <div class="card-header py-3">
+      <div class="d-flex align-items-center">
+        <div class="flex-shrink-0 d-none d-md-block">
+          <img src="images/#" class="rounded review-img" />
+        </div>
+        <div class="flex-grow-1 ps-md-3">
+          <div class="d-flex justify-content-between album-header">
+            <h5 class="card-title"><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></h5>
+            <p>Avg. Rating: <span class="rating">{{ ratings_avg }}</span></p>
+          </div>
+          <div class="d-flex justify-content-between user-header">
+            <p class="text-muted">Reviewed by <a href="{% url 'user-profile' review.author.id %}" class="username">{{ review.author }}</a> on {{ review.created|date:"N j, Y" }}</p>
+            <p class="text-muted">User Rating: <span class="added-rating">{{ review.rating }}</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p class="mb-0 review-content">{{ review.content }}</p>
+    </div>
+    <div class="card-footer d-flex align-items-center justify-content-between">
+      <p><a href="{% url 'review' review.id %}">{{ review.addedreview_set.all.count }} more reviews</a></p>
+      <!-- Instructor deleted the "Edit" and "Delete" buttons from the `home` page reviews,
+           and will be displaying them only in an individual user's profile page. Do the same? -->
+      {% if request.user == review.author %}
+        <div class="d-lg-block gap-2" role="group" aria-label="Edit and delete">
+          <a class="btn btn-primary btn-sm" href="{% url 'update-review' review.id %}" role="button">Edit</a>
+          <a class="btn btn-danger btn-sm" href="{% url 'delete-review' review.id %}" role="button">Delete</a>
+        </div>
+      {% endif %} 
+      <a href="{% url 'review' review.id %}" class="add-review">+ Add your review</a>
+    </div>
+  </div>
+{% endfor %}
+
+
+
+
+<!-- <div>
   {% for review in reviews %} 
     <div>
+      <h5><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></h5>
+      <p>Avg. Rating: 8.6</p>
+      <p>Reviewed by <a href="{% url 'user-profile' review.author.id %}">{{ review.author.username }}</a></p>
+      <p>User Review: 8</p>
+      *** Need to add the body of the review here, and maybe limit it to 100(?) 200(?) chars? ***
+      *** In the same way you did the "Recent Activity" text. ***
       {% if request.user == review.author %}
         <a href="{% url 'update-review' review.id %}">Edit</a>
         <a href="{% url 'delete-review' review.id %}">Delete</a>
-      {% endif %} 
-      <h5>{{ review.id }} -- <a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></h5>
-      <a href="{% url 'user-profile' review.author.id %}">{{ review.author.username }}</a>
-      <hr>
+      {% endif %}
     </div>
-  {% endfor %}  
-</div>
+    <hr>
+  {% endfor %} 
+</div> -->
