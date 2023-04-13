@@ -1,52 +1,40 @@
 {% extends 'main.html' %} 
 
-{% block content %}
+{% block content %} 
+  <main class="container-fluid overflow-hidden pt-3 pb-5 px-4">
+    <div class="row gx-3">
 
-  <style>
-    .home-container {
-      display: grid;
-      grid-template-columns: 1fr 3fr 1fr;
-    }
-  </style>
+      {% include 'base/sidebar_component.html' %}
 
-  <div class="home-container">
+      <div class="col-12 col-lg-8">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h4 class="text-light">Recent Reviews</h4>
+            <p class="text-light review-count">
+              {% if review_count == 1 %} 
+                {{ review_count }} Review
+              {% else %} 
+                {{ review_count }} Reviews 
+              {% endif %} 
+            </p>
+          </div>
+          <div>
+            <a type="button" href="{% url 'create-review' %}" class="btn btn-review">+ Create a Review</a>
+          </div>
+        </div>
 
-    <div>
-      {% include 'base/list_component.html' %} 
+        {% include 'base/feed_component.html' %}  
+  
+        <nav class="pt-3 review-nav" aria-label="Review page navigation">
+          <ul class="pagination justify-content-center">
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+          </ul>
+        </nav>
+      </div>
     </div>
-
-    <div>
-      <!-- Will this work near the search bar (in `navbar.html`)? (Or to the left of the "Create a Review" button?) -->
-      <!-- <h5>{{ reviews_count }} Reviews Created</h5> -->
-
-      <a href="{% url 'create-review' %}">Create a Review</a>
-
-      {% include 'base/feed_component.html' %} 
-
-    </div>
-
-    <!-- ** ADD THE "ABOUT" WINDOW TO THE LEFT COLUMN ** -->
-    <!-- ** For your true "Record Review" build: An "About" window, and the "Recent Activity"
-            on Your Reviews" will be viewable through `user.is_authenticated`. ** -->
-    <!-- <div>
-      <div>
-        <h3>How Record Review Works</h3>
-        <p>
-          Craft beer thundercats woke normcore slow-carb schlitz. Messenger bag knausgaard 
-          farm-to-table letterpress lo-fi. Meh humblebrag jianbing, stumptown freegan big 
-          mood DIY cronut tbh air plant bicycle rights readymade. Kale chips copper mug 
-          organic tofu sus hammock fingerstache hexagon salvia readymade 90's williamsburg 
-          marfa meditation.
-        </p>
-      </div> -->
-
-    <div>
-      {% include 'base/activity_component.html' %} 
-    </div>
-
-    <!-- Ending <div> for the right column -->
-    <!-- </div> -->
-
-  </div>
-
+  </main>
 {% endblock %} 
