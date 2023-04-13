@@ -1,0 +1,47 @@
+{% extends 'main.html' %} 
+
+{% block content %} 
+  <main class="container-fluid overflow-hidden pt-3 pb-5 px-4">
+    <div class="col-10 col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header d-flex align-items-center py-3 card__header">
+          <div class="col-1">
+            <a href="{{ request.META.HTTP_REFERER }}"><i class="bi bi-arrow-left"></i></a>
+          </div>
+          <div class="col-10 text-center text-primary">
+            Edit Your Profile
+          </div>
+          <div class="col-1"></div>
+        </div>
+        <div class="card-body">
+          <p class="text-decoration-underline">Avatar</p>
+          <form method="POST" action="">
+            {% csrf_token %} 
+            {% for field in form %} 
+              <div class="mb-3">
+                <label for="profile-avatar">{{ field.label }}</label>
+                {{ field }}
+              </div>
+            {% endfor %} 
+            <!-- <div class="mb-3">
+              <label for="profile-name" class="form-label">Name:</label>
+              <input type="text" class="form-control" id="profile-name" aria-labelledby="profileName" />
+            </div>
+            <div class="mb-3">
+              <label for="profile-username" class="form-label">Username:</label>
+              <input type="text" class="form-control" id="profile-username" aria-labelledby="profileUsername" />
+            </div>
+            <div class="mb-3">
+              <label for="profile-bio" class="mb-2">Bio:</label>
+              <textarea type="text" name="profile-bio" placeholder="Tell us about yourself..." class="w-100 ps-1" rows="5"></textarea>
+            </div> -->
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+              <a type="button" href="index.html" class="btn btn-secondary me-md-2">Cancel</a>
+              <button type="submit" class="btn btn-info" type="button">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %} 
