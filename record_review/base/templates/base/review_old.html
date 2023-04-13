@@ -1,0 +1,46 @@
+{% extends 'main.html' %} 
+
+{% block content %} 
+
+  <div class="review-container">   <!-- Create a more significant left/right margin as this will be the only thing on the page. -->
+
+    <h1>{{ review.artist }} - {{ review.album }}</h1>
+
+    <h4>{{ review.author }} - {{ review.created|timesince }} ago</h4>
+
+    <!-- This will be the added ratings for all of the ratings. -->
+    <h5>Rating: {{ review.rating }}</h5>
+
+    <p>{{ review.content }}</p>
+
+    <div class="comment-wrapper">
+      <h3>Added Reviews</h3>
+      <hr>
+
+      {% for added_review in added_reviews %} 
+        <div>
+          {% if request.user == added_review.user %}
+            <a href="{% url 'delete-added-review' added_review.id %}">Delete</a>
+          {% endif %}
+          <small>{{ added_review.user }} {{ added_review.created|timesince }} ago - Rating: {{ added_review.rating }}</small>
+          <p>{{ added_review.body }}</p>
+          <hr>
+        </div>
+      {% endfor %} 
+    </div>
+
+    {% if request.user.is_authenticated %} 
+      <div class="comment-form">
+        <form method="POST" action="">
+          {% csrf_token %} 
+            <textarea type="text" name="body" placeholder="Add your review here..."></textarea>
+            <label for="rating">Rating:</label>
+            <input type="number" id="rating" name="rating" min="0" max="10" value="10" />
+            <input type="submit" value="Submit" />
+        </form>
+      </div>
+    {% endif %} 
+
+  </div>
+
+{% endblock content %} 
