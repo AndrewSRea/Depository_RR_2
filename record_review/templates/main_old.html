@@ -1,0 +1,187 @@
+<!-- <!DOCTYPE html>
+  {% load static %}
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      *** Check out Corey Schafer's vid on how to change the `title` for each page. ***
+      <title>Record Review</title>
+      *** <link 
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" 
+        rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" 
+        crossorigin="anonymous"
+      >
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"> ***
+      <link rel="stylesheet" type="text/css" href="{% static 'styles/main.css' %}">
+    </head>
+    <body>
+      {% include 'navbar.html' %} 
+  
+      {% if messages %} 
+        <ul class="messages">
+          {% for message in messages %} 
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %} 
+  
+      {% block content %} 
+  
+      {% endblock %} 
+  
+      <script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" 
+        crossorigin="anonymous"
+      ></script>
+    </body>
+  </html> -->
+  
+  
+  <!--
+        <main class="container-fluid overflow-hidden pt-3 pb-5 px-4">
+        <div class="row gx-3">
+          <div class="col-4 d-none d-lg-block">
+            <div class="card mb-4">
+              <div class="card-header py-0 ps-0">
+                <button class="btn btn-link shadow-none" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                  How Record Review Works <i class="bi bi-chevron-right"></i>
+                </button>
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Welcome to Record Review!</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        Write some reviews for your favorite music albums using the<br>
+                        <span style="color: #e1b10f;">+ Create a Review</span> button.
+                        Add the music album's artist or band name, the name of the album, your own rating of the
+                        album, and write your review of the album. You can even add an image of the album cover
+                        to your review! (<a target="_blank" href="https://www.wikipedia.org/">wikipedia.org</a> 
+                        is a good resource for finding these album images.)<br>
+                        You can also add your own review and rating to other existing album reviews by clicking the 
+                        <a href="{% url 'create-review' %}">+ Add your review</a> links inside each album review.<br>
+                        So have some fun and get reviewing!
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card mb-3 list-card">
+              <div class="card-header py-1 card__header">
+                *** Highest Rated (<-- just text) ***
+                <div class="dropdown">
+                  <button class="btn btn-link dropdown-toggle shadow-none ps-0 card__header" type="button" id="dropdownListButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    Highest Rated
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownListButton">
+                    <li><a class="active dropdown-item" href="#">Highest Rated</a></li>
+                    <li><a class="dropdown-item" href="#">Lowest Rated</a></li>
+                    <li><a class="dropdown-item" href="#">Alphabetical A-Z</a></li>
+                    <li><a class="dropdown-item" href="#">Alphabetical Z-A</a></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="card-body list-body">
+                {% for review in highest_list %}
+                  <div class="d-flex justify-content-between">
+                    <p class="list-item"><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></p><span>{{ review.rating }}</span>   *** JS: First, you'll have to put a `class` on this; second, have JS grab the `class` and convert the STRING number to an actual NUMBER; then, do an if-else if numbers are 8-10, assign gold coloring, 4-7, green coloring, 1-3, red coloring. ***
+                  </div>
+                {% endfor %}
+              </div>
+              *** Do I need to configure a page for "Highest Rated" ("Lowest Rated", etc.) Reviews? OR can I just use the already existing Reviews and alter their order with `order_by()` ***
+              <div class="card-footer">
+                <a class="list-expand" href="#">+ More</a>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header card__header">
+                Recent Activity
+              </div>
+              <div class="card-body">
+                {% for added_review in added_reviews %}
+                <div class="card mb-3">
+                  <div class="card-header">
+                    *** <div class="d-flex justify-content-between"> ***
+                    <p>
+                      <a href="{% url 'user-profile' added_review.user.id %}">{{ added_review.user }}</a> 
+                      gave a {{ added_review.rating }} rating to <a href="{% url 'review' added_review.review.id %}">{{ added_review.review.artist }} - {{ added_review.review.album }}</a>   *** Same JS as above on the numbered ratings here? ***
+                      <br><br>
+                      <span>{{ added_review.created|timesince }} ago</span>
+                    </p>
+                    *** </div> ***
+                  </div>
+                  <div class="card-body">
+                    <p>{{ added_review }}</p>
+                    *** Add a delete function? ***
+                    *** {% if request.user == added_review.user %}
+                      <a href="{% url 'delete-added-review' added_review.id %}">Delete</a>
+                    {% endif %} ***
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-8">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4 class="text-light">Recent Reviews</h4>
+                <p class="text-light review-count">{{ review_count }} Reviews</p>
+              </div>
+              <div>
+                <a type="button" href="{% url 'create-review' %}" class="btn btn-review">+ Create a Review</a>
+              </div>
+            </div>
+            *** FIRST REVIEW CARD ***
+            {% for review in reviews %} 
+              <div class="card mb-3">
+                <div class="card-header py-3">
+                  <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 d-none d-md-block">
+                      <img src="images/#" class="rounded review-img" />
+                    </div>
+                    <div class="flex-grow-1 ps-md-3">
+                      <div class="d-flex justify-content-between album-header">
+                        <h5 class="card-title"><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></h5>
+                        <p>Avg. Rating: <span class="rating">8.6</span></p>
+                      </div>
+                      <div class="d-flex justify-content-between user-header">
+                        <p class="text-muted">Reviewed by <a href="{% url 'user-profile' review.author.id %}" class="username">{{ review.author }}</a> on {{ review.created|date:"N j, Y" }}</p>
+                        <p class="text-muted">User Rating: <span class="added-rating">{{ review.rating }}</span></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <p class="review-content">{{ review.content }}</p>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                  <p><a href="{% url 'review' review.id %}">{{ review.added_review.all.count }} more reviews</a></p>
+                  {% if request.user == review.author %}
+                    <div class="d-lg-block gap-2" role="group" aria-label="Edit and delete">
+                      <a class="btn btn-primary btn-sm" href="{% url 'update-review' review.id %}" role="button">Edit</a>
+                      <a class="btn btn-danger btn-sm" href="{% url 'delete-review' review.id %}" role="button">Delete</a>
+                    </div>
+                  {% endif %} 
+                  <a href="{% url 'review' review.id %}" class="add-review">+ Add your review</a>
+                </div>
+              </div>
+            {% endfor %}
+            <nav class="pt-3 review-nav" aria-label="Review page navigation">
+              <ul class="pagination justify-content-center">
+                <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">Next</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </main>
+  -->
