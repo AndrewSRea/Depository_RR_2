@@ -2,18 +2,18 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Sum, Q 
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout 
 from django.contrib.auth.forms import UserCreationForm
 from .models import Review, AddedReview
-from .forms import ReviewForm
+from .forms import ReviewForm, UserForm
 
 
 # reviews = [
-#   {'id': 1, 'album': 'Sleeps With Angels', 'artist': 'Neil Young'},
-#   {'id': 2, 'album': 'Vitalogy', 'artist': 'Pearl Jam'},
-#   {'id': 3, 'album': 'Nevermind', 'artist': 'Nirvana'},
+#   {'id': 1, 'artist': 'Neil Young', 'album': 'Sleeps with Angels'},
+#   {'id': 2, 'artist': 'Pearl Jam', 'album': 'Vitalogy'},
+#   {'id': 3, 'artist': 'Nirvana', 'album': 'Nevermind'},
 # ]
 
 
@@ -26,7 +26,6 @@ def loginPage(request):
   if request.method == 'POST':
     username = request.POST.get('username')
     password = request.POST.get('password')
-
 
     try:
       user = User.objects.get(username=username)
@@ -67,48 +66,82 @@ def registerPage(request):
   return render(request, 'base/login_register.html', {'form': form})
 
 
-# Home page
+# def average(request, pk):
+#   added_ratings_sum = Review.objects.get(id=pk).aggregate(Sum('addedreview__rating'))
+
+#   print(added_ratings_sum)
+
+#   for i in added_ratings_sum.values():
+#     a_r_sum = i
+
+#   orig_ratings_sum = Review.objects.get(id=pk).aggregate(Sum('rating'))
+
+#   for j in orig_ratings_sum.values():
+#     r_sum = j
+
+#   total_sum = a_r_sum + r_sum
+
+#   ratings_count = Review.objects.get(id=pk).addedreview_set.count() + 1
+
+#   ratings_avg = total_sum / ratings_count
+
+#   return render(request, 'base/home.html', {'ratings_avg': ratings_avg})
+
+
 def home(request):
   q = request.GET.get('q') if request.GET.get('q') != None else ''
 
   reviews = Review.objects.filter(Q(artist__icontains=q) | Q(album__icontains=q))
+  review_count = reviews.count()
+  added_reviews = AddedReview.objects.all()
 
-  added_reviews = AddedReview.objects.all().order_by('-updated', '-created')
+  highest_list = Review.objects.all().order_by('-rating')[0:5]
 
-  # if you want to add a header: <h5>{{reviews_count}} Reviews Created</h5>
-  # pass `'reviews_count': reviews_count` in the `context` below
-  # reviews_count = reviews.count()
-
-  highest_list = Review.objects.all().order_by('-rating')
-  lowest_list = Review.objects.all().order_by('rating')
-  a_z_artist_list = Review.objects.all().order_by('artist')
-  #a_z_album_list =
-
+  # Instructor alluded to creating `if` statements here in a view in order to render certain data
+  # This would help with your "Highest Rated" dropdown -- so you will have to make a `list` view
   context = {
     'reviews': reviews, 
     'highest_list': highest_list, 
-    'lowest_list': lowest_list, 
-    'a_z_artist_list': a_z_artist_list,
+    'review_count': review_count, 
     'added_reviews': added_reviews
-  } # maybe have to create a `list` function?
-
+  }
   return render(request, 'base/home.html', context)
 
 
-# Individual review page
 def review(request, pk):
   review = Review.objects.get(id=pk)
   added_reviews = review.addedreview_set.all()
 
+  # added_ratings_sum = Review.objects.get(id=pk).aggregate(Sum('addedreview__rating'))
+
+  # for i in added_ratings_sum.values():
+  #   a_r_sum = i
+
+  # orig_ratings_sum = Review.objects.get(id=pk).aggregate(Sum('rating'))
+
+  # for j in orig_ratings_sum.values():
+  #   r_sum = j
+
+  # total_sum = a_r_sum + r_sum
+
+  # ratings_count = Review.objects.get(id=pk).addedreview_set.count() + 1
+
+  # ratings_avg = total_sum / ratings_count
+
+  # Functionality for `rating` not working. Will have to figure out how to make that work.
   if request.method == 'POST':
-    added_review = AddedReview.objects.create(
+    added_review_form = AddedReview.objects.create(
       user=request.user,
       review=review,
-      body=request.POST.get('body')
+      body=request.POST.get('body'),
+      rating=request.POST.get('rating')
     )
     return redirect('review', pk=review.id)
 
-  context = {'review': review, 'added_reviews': added_reviews}
+  context = {
+    'review': review, 
+    'added_reviews': added_reviews
+  }
   return render(request, 'base/review.html', context)
 
 
@@ -116,26 +149,17 @@ def userProfile(request, pk):
   user = User.objects.get(id=pk)
   reviews = user.review_set.all()
   added_reviews = user.addedreview_set.all()
-  highest_list = user.review_set.all().order_by('-rating')
-  lowest_list = user.review_set.all().order_by('rating')
-  a_z_artist_list = user.review_set.all().order_by('artist')
-  #a_z_album_list =
-
+  highest_list = Review.objects.all().order_by('-rating')
   context = {
-    'user': user, 
-    'reviews': reviews, 
-    'added_reviews': added_reviews,
-    'highest_list': highest_list, 
-    'lowest_list': lowest_list, 
-    'a_z_artist_list': a_z_artist_list,
-    }
+    'user': user, 'reviews': reviews, 'added_reviews': added_reviews, 'highest_list': highest_list
+  }
   return render(request, 'base/profile.html', context)
 
 
-# Create a Review form
 @login_required(login_url='login')
 def createReview(request):
   form = ReviewForm()
+
   if request.method == 'POST':
     form = ReviewForm(request.POST)
     if form.is_valid():
@@ -148,8 +172,6 @@ def createReview(request):
   return render(request, 'base/review_form.html', context)
 
 
-# Not sure if I need this but it might be necessary if a user thinks he/she messed up their
-# initial review
 @login_required(login_url='login')
 def updateReview(request, pk):
   review = Review.objects.get(id=pk)
@@ -160,7 +182,7 @@ def updateReview(request, pk):
 
   if request.method == 'POST':
     form = ReviewForm(request.POST, instance=review)
-    if form.is_valid:
+    if form.is_valid():
       form.save()
       return redirect('home')
 
@@ -168,8 +190,6 @@ def updateReview(request, pk):
   return render(request, 'base/review_form.html', context)
 
 
-# I think the instructor will set this up so you'll only be able to see the "delete" button on their
-# own reviews if they're logged in
 @login_required(login_url='login')
 def deleteReview(request, pk):
   review = Review.objects.get(id=pk)
@@ -194,3 +214,17 @@ def deleteAddedReview(request, pk):
     added_review.delete()
     return redirect('home')
   return render(request, 'base/delete.html', {'obj': added_review})
+
+
+@login_required(login_url='login')
+def updateProfile(request):
+  user = request.user
+  form = UserForm(instance=user)
+
+  if request.method == 'POST':
+    form = UserForm(request.POST, instance=user)
+    if form.is_valid():
+      form.save()
+      return redirect('user-profile', pk=user.id)
+
+  return render(request, 'base/update_profile.html', {'form': form})
