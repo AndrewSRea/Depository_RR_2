@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Q 
+from django.db.models import Count, F, Q, Sum
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout 
 from django.contrib.auth.forms import UserCreationForm
@@ -66,28 +66,6 @@ def registerPage(request):
   return render(request, 'base/login_register.html', {'form': form})
 
 
-# def average(request, pk):
-#   added_ratings_sum = Review.objects.get(id=pk).aggregate(Sum('addedreview__rating'))
-
-#   print(added_ratings_sum)
-
-#   for i in added_ratings_sum.values():
-#     a_r_sum = i
-
-#   orig_ratings_sum = Review.objects.get(id=pk).aggregate(Sum('rating'))
-
-#   for j in orig_ratings_sum.values():
-#     r_sum = j
-
-#   total_sum = a_r_sum + r_sum
-
-#   ratings_count = Review.objects.get(id=pk).addedreview_set.count() + 1
-
-#   ratings_avg = total_sum / ratings_count
-
-#   return render(request, 'base/home.html', {'ratings_avg': ratings_avg})
-
-
 def home(request):
   q = request.GET.get('q') if request.GET.get('q') != None else ''
 
@@ -95,10 +73,8 @@ def home(request):
   review_count = reviews.count()
   added_reviews = AddedReview.objects.all()
 
-  highest_list = Review.objects.all().order_by('-rating')[0:5]
+  highest_list = Review.objects.order_by('-rating')[0:5]
 
-  # Instructor alluded to creating `if` statements here in a view in order to render certain data
-  # This would help with your "Highest Rated" dropdown -- so you will have to make a `list` view
   context = {
     'reviews': reviews, 
     'highest_list': highest_list, 
@@ -112,23 +88,6 @@ def review(request, pk):
   review = Review.objects.get(id=pk)
   added_reviews = review.addedreview_set.all()
 
-  # added_ratings_sum = Review.objects.get(id=pk).aggregate(Sum('addedreview__rating'))
-
-  # for i in added_ratings_sum.values():
-  #   a_r_sum = i
-
-  # orig_ratings_sum = Review.objects.get(id=pk).aggregate(Sum('rating'))
-
-  # for j in orig_ratings_sum.values():
-  #   r_sum = j
-
-  # total_sum = a_r_sum + r_sum
-
-  # ratings_count = Review.objects.get(id=pk).addedreview_set.count() + 1
-
-  # ratings_avg = total_sum / ratings_count
-
-  # Functionality for `rating` not working. Will have to figure out how to make that work.
   if request.method == 'POST':
     added_review_form = AddedReview.objects.create(
       user=request.user,
@@ -138,9 +97,12 @@ def review(request, pk):
     )
     return redirect('review', pk=review.id)
 
+  highest_list = Review.objects.all().order_by('-rating')[0:5]
+
   context = {
     'review': review, 
-    'added_reviews': added_reviews
+    'added_reviews': added_reviews,
+    'highest_list': highest_list
   }
   return render(request, 'base/review.html', context)
 
@@ -149,9 +111,13 @@ def userProfile(request, pk):
   user = User.objects.get(id=pk)
   reviews = user.review_set.all()
   added_reviews = user.addedreview_set.all()
-  highest_list = Review.objects.all().order_by('-rating')
+  highest_list = Review.objects.all().order_by('-rating')[0:5]
+
   context = {
-    'user': user, 'reviews': reviews, 'added_reviews': added_reviews, 'highest_list': highest_list
+    'user': user, 
+    'reviews': reviews, 
+    'added_reviews': added_reviews, 
+    'highest_list': highest_list
   }
   return render(request, 'base/profile.html', context)
 
