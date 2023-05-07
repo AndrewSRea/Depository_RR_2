@@ -73,7 +73,12 @@ def home(request):
   review_count = reviews.count()
   added_reviews = AddedReview.objects.all()
 
-  highest_list = Review.objects.order_by('-rating')[0:5]
+  highest_list = Review.objects.all().order_by('-rating')[0:5]
+
+  # highest_list = Review.objects.annotate(
+  #   avg_rating=(F('rating') + Sum('addedreview__rating', default=0))
+  #   / (Count('addedreview__rating') + 1)
+  # ).order_by('-avg_rating')[0:5]
 
   context = {
     'reviews': reviews, 
@@ -81,6 +86,9 @@ def home(request):
     'review_count': review_count, 
     'added_reviews': added_reviews
   }
+
+  # print(highest_list.query)
+
   return render(request, 'base/home.html', context)
 
 
