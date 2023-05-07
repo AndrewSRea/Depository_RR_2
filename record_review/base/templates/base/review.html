@@ -19,7 +19,7 @@
               <div class="flex-grow-1 ps-md-3">
                 <div class="d-flex justify-content-between album-header">
                   <h5 class="card-title"><a href="#">{{ review.artist }} - {{ review.album }}</a></h5>
-                  <p>Avg. Rating: <span class="rating">{{ ratings_avg }}</span></p>
+                  <p>Avg. Rating: <span class="rating">{{ review.avg_rating }}</span></p>
                 </div>
                 <div class="d-flex justify-content-between user-header">
                   <p class="text-muted">Reviewed by <a href="{% url 'user-profile' review.author.id %}" class="username">{{ review.author }}</a> on {{ review.created|date:"N j, Y" }}</p>
