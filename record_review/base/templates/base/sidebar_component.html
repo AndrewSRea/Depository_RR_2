@@ -28,8 +28,11 @@
     </div>
   </div>
   <div class="card mb-3 list-card">
-    <div class="card-header py-1 card__header">
-      <!-- Highest Rated (<-- just text) -->
+    <div class="card-header card__header">
+      Highest Rated
+    </div>
+    <!-- <div class="card-header py-1 card__header">
+      *** Highest Rated (<-- just text) ***
       <div class="dropdown">
         <button class="btn btn-link dropdown-toggle shadow-none ps-0 card__header" type="button" id="dropdownListButton" data-bs-toggle="dropdown" aria-expanded="false">
           Highest Rated
@@ -41,11 +44,11 @@
           <li><a class="dropdown-item" href="#">Alphabetical Z-A</a></li>
         </ul>
       </div>
-    </div>
+    </div> -->
     <div class="card-body list-body">
       {% for review in highest_list %}
         <div class="d-flex justify-content-between">
-          <p class="list-item"><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></p><span>{{ review.rating }}</span>   <!-- JS: First, you'll have to put a `class` on this; second, have JS grab the `class` and convert the STRING number to an actual NUMBER; then, do an if-else if numbers are 8-10, assign gold coloring, 4-7, green coloring, 1-3, red coloring. -->
+          <p class="list-item"><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></p><span>{{ review.avg_rating }}</span>   <!-- JS: First, you'll have to put a `class` on this; second, have JS grab the `class` and convert the STRING number to an actual NUMBER; then, do an if-else if numbers are 8-10, assign gold coloring, 4-7, green coloring, 1-3, red coloring. -->
         </div>
       {% endfor %}
     </div>
