@@ -4,50 +4,49 @@
   <main class="container-fluid overflow-hidden pt-3 pb-5 px-4">
     <div class="row gx-3">
 
-      {% include 'base/sidebar_component.html' %}
+      {% include 'base/sidebar_component.html' %}  
 
       <div class="col-12 col-lg-8">
         <div class="vstack mb-2 text-center profile-group">
           <div>
-            <img src="images/#" class="rounded-circle profile-image" alt="Profile image" width="60" height="60" />
+            <img src="{{ user.image.url }}" class="rounded-circle profile-image" alt="Profile image" width="60" height="60" />
           </div>
           <h4 class="pt-2">{{ user.username }}</h4>
           <p class="pt-0 text-light">
-            <span>{{ user.review_set.all.count }}</span> 
-            {% if user.review_set.all.count == 1 %}
+            <span>{{ user.album_set.all.count }}</span>
+            {% if user.album_set.all.count == 1 %} 
               Review
             {% else %} 
-              Reviews
+              Reviews 
             {% endif %} 
           </p>
-          {% if request.user == user %}
+          {% if request.user == user %} 
             <a type="button" href="{% url 'update-profile' %}" class="btn btn-warning rounded-pill mx-auto px-3">
               Edit Profile
             </a>
-          {% endif %}
+          {% endif %} 
         </div>
         <div class="vstack align-items-start profile-group">
           <h5>About</h5>
           <p class="text-light">
-            Graduate from University of Oregon's Coding Bootcamp, with training in HTML, CSS,
-            JavaScript, jQuery, Express.js, Node.js, MongoDB, MySQL, and React.js, who is seeking
-            employment as a Full-Stack Web Developer. And currently I'm working on this very 
-            project in Django.
+            {{ user.bio }}
           </p>
         </div>
-        
+
         {% include 'base/feed_component.html' %} 
 
-        <nav class="pt-3 review-nav" aria-label="Review page navigation">
-          <ul class="pagination justify-content-center">
-            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">Next</a></li>
-          </ul>
-        </nav>
+        {% comment %} 
+          <nav class="pt-3 review-nav" aria-label="Review page navigation">
+            <ul class="pagination justify-content-center">
+              <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+              <li class="page-item"><a class="page-link" href="#">1</a></li>
+              <li class="page-item"><a class="page-link" href="#">2</a></li>
+              <li class="page-item"><a class="page-link" href="#">3</a></li>
+              <li class="page-item"><a class="page-link" href="#">Next</a></li>
+            </ul>
+          </nav>
+        {% endcomment %}
       </div>
     </div>
   </main>
-{% endblock %} 
+{% endblock content %} 
