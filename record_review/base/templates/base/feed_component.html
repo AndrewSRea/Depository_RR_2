@@ -1,58 +1,66 @@
-{% for review in reviews %} 
+{% for album in albums %} 
   <div class="card mb-3">
     <div class="card-header py-3">
       <div class="d-flex align-items-center">
         <div class="flex-shrink-0 d-none d-md-block">
-          <img src="images/#" class="rounded review-img" />
+          <img src="{{ album.image.url }}" class="rounded album-img" />
         </div>
         <div class="flex-grow-1 ps-md-3">
           <div class="d-flex justify-content-between album-header">
-            <h5 class="card-title"><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></h5>
-            <p>Avg. Rating: <span class="rating">{{ review.avg_rating }}</span></p>
+            <h5 class="card-title"><a href="{% url 'album' album.id %}">{{ album.artist }} - {{ album.title }}</a></h5>
+            <p>Avg. Rating: <span class="rating">{{ album.avg_rating }}</span></p>
           </div>
           <div class="d-flex justify-content-between user-header">
-            <p class="text-muted">Reviewed by <a href="{% url 'user-profile' review.author.id %}" class="username">{{ review.author }}</a> on {{ review.created|date:"N j, Y" }}</p>
-            <p class="text-muted">User Rating: 
-              <span class="added-rating">{{ review.rating }}</span></p>
+            <p class="text-muted">Reviewed by <a href="{% url 'user-profile' album.creator.id %}" class="username">{{ album.creator }}</a> on {{ album.created|date:"N j, Y" }}</p>
+            <p class="text-muted">User Rating:
+              <span class="added-rating">{{ album.rating }}</span></p>
           </div>
         </div>
       </div>
     </div>
     <div class="card-body">
-      <p class="mb-0 review-content">{{ review.content }}</p>
+      <p class="mb-0 album-comment">{{ album.comment }}</p>
     </div>
     <div class="card-footer d-flex align-items-center justify-content-between">
-      <p><a href="{% url 'review' review.id %}">{{ review.addedreview_set.all.count }} more reviews</a></p>
-      <!-- Instructor deleted the "Edit" and "Delete" buttons from the `home` page reviews,
-           and will be displaying them only in an individual user's profile page. Do the same? -->
-      {% if request.user == review.author %}
+      <p><a href="{% url 'album' album.id %}">{{ album.review_set.all.count }} more 
+        {% if album.review_set.all.count == 1 %}
+          review 
+        {% else %} 
+          reviews 
+        {% endif %}</a></p>
+      <!-- Get rid of "Edit" and "Delete" buttons in albums on home page?
+           And display them in profile pages? Or keep them? -->
+      {% if request.user == album.creator %} 
         <div class="d-lg-block gap-2" role="group" aria-label="Edit and delete">
-          <a class="btn btn-primary btn-sm" href="{% url 'update-review' review.id %}" role="button">Edit</a>
-          <a class="btn btn-danger btn-sm" href="{% url 'delete-review' review.id %}" role="button">Delete</a>
+          <a class="btn btn-primary btn-sm" href="{% url 'update-album' album.id %}" role="button">Edit</a>
+          <a class="btn btn-danger btn-sm" href="{% url 'delete-album' album.id %}" role="button">Delete</a>
         </div>
       {% endif %} 
-      <a href="{% url 'review' review.id %}" class="add-review">+ Add your review</a>
+      <a href="{% url 'album' album.id %}" class="add-review">+ Add your review</a>
     </div>
   </div>
-{% endfor %}
+{% endfor %} 
 
+<nav class="pt-3 review-nav" aria-label="Review page navigation">
+  <ul class="pagination justify-content-center">
 
+    {% if albums.has_previous %} 
+      <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ albums.previous_page_number }}">Previous</a></li>
+    {% endif %} 
 
-
-<!-- <div>
-  {% for review in reviews %} 
-    <div>
-      <h5><a href="{% url 'review' review.id %}">{{ review.artist }} - {{ review.album }}</a></h5>
-      <p>Avg. Rating: 8.6</p>
-      <p>Reviewed by <a href="{% url 'user-profile' review.author.id %}">{{ review.author.username }}</a></p>
-      <p>User Review: 8</p>
-      *** Need to add the body of the review here, and maybe limit it to 100(?) 200(?) chars? ***
-      *** In the same way you did the "Recent Activity" text. ***
-      {% if request.user == review.author %}
-        <a href="{% url 'update-review' review.id %}">Edit</a>
-        <a href="{% url 'delete-review' review.id %}">Delete</a>
+    {% for num in albums.paginator.page_range %}
+      {% if albums.number == num %}
+        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+      {% elif num > albums.number|add:'-3' and num < albums.number|add:'3' %} 
+        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
       {% endif %}
-    </div>
-    <hr>
-  {% endfor %} 
-</div> -->
+    {% endfor %}
+
+    {% if albums.has_next %} 
+      <li class="page-item"><a class="page-link" href="?page={{ albums.next_page_number }}">Next</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ albums.paginator.num_pages }}">Last</a></li>
+    {% endif %} 
+
+  </ul>
+</nav>
