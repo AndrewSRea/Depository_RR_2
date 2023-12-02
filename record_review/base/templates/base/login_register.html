@@ -1,15 +1,17 @@
 {% extends 'main.html' %} 
+
 {% load crispy_forms_tags %} 
+
 {% block content %} 
   <main class="container-fluid overflow-hidden pt-3 pb-5 px-4">
     <div class="col-10 col-md-8 mx-auto">
-      {% if page == 'login' %}
+      {% if page == 'login' %} 
         <div class="card">
           <div class="card-header text-center text-primary py-3 card__header">
-            Login
+            Login 
           </div>
           <div class="card-body">
-            <h6 class="card-title text-center pt-2 pb-3">Write reviews for your favorite albums!</h6>
+            <h6 class="card-title text-center text-primary pt-2 pb-3">Write reviews for your favorite albums!</h6>
             <form method="POST" action="">
               {% csrf_token %} 
               <div class="mb-3">
@@ -17,17 +19,9 @@
                 <input type="text" class="form-control" name="username" placeholder="Enter Username" />
               </div>
               <div class="mb-3">
-                <label for="password" class="form-label">Password:</label>
+                <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" name="password" placeholder="Enter Password" />
               </div>
-              <!-- <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" aria-labelledby="usernameHelp">
-              </div>
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password">
-              </div> -->
               <button type="submit" class="btn btn-primary"><i class="bi bi-lock-fill pe-2"></i>Login</button>
             </form>
           </div>
@@ -39,12 +33,12 @@
       {% else %} 
         <div class="card">
           <div class="card-header text-center text-primary py-3 card__header">
-            Register
+            Register 
           </div>
           <div class="card-body">
-            <h6 class="card-title text-center pt-2 pb-3">Write reviews for your favorite albums!</h6>
+            <h6 class="card-title text-center text-primary pt-2 pb-3">Write reviews for your favorite albums!</h6>
             <form method="POST" action="">
-              {% csrf_token %} 
+              {% csrf_token %}
               {{ form|crispy }}
               <button type="submit" class="btn btn-primary"><i class="bi bi-lock-fill pe-2"></i>Register</button>
             </form>
@@ -54,7 +48,7 @@
             <p class="text-center"><a href="{% url 'login' %}">Login</a></p>
           </div>
         </div>
-      {% endif %}
+      {% endif %} 
     </div>
   </main>
-{% endblock %} 
+{% endblock content %}
