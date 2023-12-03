@@ -3,12 +3,12 @@
   <div class="container-fluid px-4 py-2">
     <div class="col-2 col-md-4">
       <a class="navbar-brand d-flex align-items-center text-warning" href="{% url 'home' %}">
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          width="20" 
-          height="20" 
+        <svg
+          xlmns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
           fill="currentColor"
-          class="bi bi-vinyl-fill me-2 brand-icon" 
+          class="bi bi-vinyl-fill me-2 brand-icon"
           viewBox="0 0 16 16"
         >
           <path d="M8 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 3a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
@@ -23,27 +23,26 @@
           <i class="bi bi-search"></i>
         </span>
         <input 
-          class="form-control" 
-          type="search" 
-          name="q" 
-          placeholder="Search for band/artist or album..." 
+          class="form-control"
+          type="search"
+          name="q"
+          placeholder="Search for band/artist or album..."
           aria-label="Search"
-        >
+        />
       </form>
     </div>
     <div class="col-4 d-flex justify-content-end">
       <div class="d-flex align-items-center user-group">
-        {% if user.is_authenticated %}
-          <!-- <img src="images/IMG_2125.JPG" alt="Profile Pic" class="rounded-circle user-image" /> -->
+        {% if user.is_authenticated %} 
+          <img src="{{ request.user.image.url }}" alt="Profile Pic" class="rounded-circle user-image" />
           <a class="nav-item nav-link ps-2 pe-0 text-warning" href="{% url 'user-profile' request.user.id %}">{{ request.user.username }}</a>
-          <a 
-            class="nav-link dropdown-toggle ps-2 dropdown-icon" 
-            id="navbarDropdownMenuLink" 
+          <a
+            class="nav-link dropdown-toggle ps-2 dropdown-icon"
+            id="navbarDropdownMenuLink"
             role="button"
             data-bs-toggle="dropdown"
             aria-expanded="false"
-          >
-          </a>
+          ></a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
             <li class="text-center">
               <a class="dropdown-item" href="{% url 'update-profile' %}">
@@ -58,8 +57,6 @@
             </li>
           </ul>
         {% else %} 
-          <!-- Instructor is using an svg file for the "Logged Out" avatar. You will be using an image so wait till he starts implementing images. -->
-          <!-- <img src="images/randomuser.jpg" alt="Unestablished Profile Pic" class="rounded-circle user-image" /> -->
           <a class="nav-item nav-link pe-0 text-warning" href="{% url 'login' %}">Login</a>
         {% endif %}
       </div>
@@ -67,19 +64,23 @@
   </div>
 </nav>
 
-<!-- <a href="/">
-  <h1>LOGO</h1>
-</a>
 
-<form method="GET" action="{% url 'home' %}">
-  <input type="text" name="q" placeholder="Search for band/artist or album..." />
-</form>
 
-{% if request.user.is_authenticated %} 
-<p>Hello, {{ request.user }}!</p>
-  <a href="{% url 'logout' %}">Logout</a>
-{% else %} 
-  <a href="{% url 'login' %}">Login</a>
-{% endif %} 
+{% comment %}
+  <!-- <a href="/">
+    <h1>LOGO</h1>
+  </a>
 
-<hr> -->
+  <form method="GET" action="{% url 'home' %}">
+    <input type="text" name="q" placeholder="Search albums..." />
+  </form>
+
+  {% if request.user.is_authenticated %}
+    <p>Hello, {{ request.user }}!</p>
+    <a href="{% url 'logout' %}">Logout</a>
+  {% else %} 
+    <a href="{% url 'login' %}">Login</a>
+  {% endif %}
+
+  <hr> -->
+{% endcomment %}
