@@ -1,204 +1,257 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
+from django.db.models import Count, FloatField, Q, Sum
+from django.db.models.functions import Cast, Round
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, F, Q, Sum
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout 
-from django.contrib.auth.forms import UserCreationForm
-from .models import Review, AddedReview
-from .forms import ReviewForm, UserForm
+from django.contrib.auth import authenticate, login, logout
+from .models import Album, Review, User
+from .forms import AlbumForm, UserForm, MyUserCreationForm
 
 
-# reviews = [
-#   {'id': 1, 'artist': 'Neil Young', 'album': 'Sleeps with Angels'},
-#   {'id': 2, 'artist': 'Pearl Jam', 'album': 'Vitalogy'},
-#   {'id': 3, 'artist': 'Nirvana', 'album': 'Nevermind'},
-# ]
+ALBUMS_PER_PAGE = 5
 
 
-def loginPage(request):
-  page = 'login'
+def login_page(request):
+	page = 'login'
+	if request.user.is_authenticated:
+		return redirect('home')
 
-  if request.user.is_authenticated:
-    return redirect('home')
+	if request.method == 'POST':
+		username = request.POST.get('username')
+		password = request.POST.get('password')
 
-  if request.method == 'POST':
-    username = request.POST.get('username')
-    password = request.POST.get('password')
+		try:
+			user = User.objects.get(username=username)
+		except:
+			messages.error(request, 'User does not exist')
 
-    try:
-      user = User.objects.get(username=username)
-    except:
-      messages.error(request, 'User does not exist')
+		user = authenticate(request, username=username, password=password)
 
-    user = authenticate(request, username=username, password=password)
+		if user is not None:
+			login(request, user)
+			return redirect('home')
+		else:
+			messages.error(request, 'Username and/or password does not exist')
 
-    if user is not None:
-      login(request, user)
-      return redirect('home')
-    else:
-      messages.error(request, 'Username or password does not exist')
-
-  context = {'page': page}
-  return render(request, 'base/login_register.html', context)
-
-
-def logoutUser(request):
-  logout(request)
-  return redirect('home')
+	context = {'page': page}
+	return render(request, 'base/login_register.html', context)
 
 
-def registerPage(request):
-  form = UserCreationForm()
-
-  if request.method == 'POST':
-    form = UserCreationForm(request.POST)
-    if form.is_valid():
-      user = form.save(commit=False)
-      user.username = form.cleaned_data.get('username')
-      user.save()
-      login(request, user)
-      return redirect('home')
-    else:
-      messages.error(request, 'An error occurred during registration')
-
-  return render(request, 'base/login_register.html', {'form': form})
+def logout_user(request):
+	logout(request)
+	return redirect('home')
 
 
+def register_page(request):
+	form = MyUserCreationForm()
+
+	if request.method == 'POST':
+		form = MyUserCreationForm(request.POST)
+		if form.is_valid():
+			user = form.save(commit=False)
+			user.username = form.cleaned_data.get('username')
+			user.save()
+			login(request, user)
+			return redirect('home')
+		else:
+			messages.error(request, 'An error occurred during registration.')
+
+	return render(request, 'base/login_register.html', {'form': form})
+
+
+# for the home page
 def home(request):
-  q = request.GET.get('q') if request.GET.get('q') != None else ''
+	# search bar
+	q = request.GET.get('q') if request.GET.get('q') != None else ''
 
-  reviews = Review.objects.filter(Q(artist__icontains=q) | Q(album__icontains=q))
-  review_count = reviews.count()
-  added_reviews = AddedReview.objects.all()
+	albums = Album.objects.filter(Q(artist__icontains=q) | Q(title__icontains=q))
 
-  highest_list = Review.objects.all().order_by('-rating')[0:5]
+	# ** Pagination **
+	# paginator = Paginator(albums, 5)
 
-  # highest_list = Review.objects.annotate(
-  #   avg_rating=(F('rating') + Sum('addedreview__rating', default=0))
-  #   / (Count('addedreview__rating') + 1)
-  # ).order_by('-avg_rating')[0:5]
+	# page_number = request.GET.get("page")
+	# page_obj = paginator.get_page(page_number) -- don't forget `page_obj` in the `context` below!
 
-  context = {
-    'reviews': reviews, 
-    'highest_list': highest_list, 
-    'review_count': review_count, 
-    'added_reviews': added_reviews
-  }
+	# ** Coding with Mitch Paginator **
+	page = request.GET.get("page", 1)
+	albums_paginator = Paginator(albums, ALBUMS_PER_PAGE)
 
-  # print(highest_list.query)
+	try:
+		albums = albums_paginator.page(page)
+	except PageNotAnInteger:
+		albums = albums_paginator.page(ALBUMS_PER_PAGE)
+	except EmptyPage:
+		albums = albums.paginator.page(albums_paginator.num_pages)
 
-  return render(request, 'base/home.html', context)
+	# the "Highest Rated" list (Fingers crossed!)
+	ratings_list = Album.objects.annotate(
+		ratings_avg=Round(Cast((Sum('rating', distinct=True) + Sum('review__rating')), output_field=FloatField()) 
+			/ (Count('review__rating') + 1), precision=2)
+	).order_by('-ratings_avg')[0:5]
 
+	# "Reviews" count -- change this to a `Count()` function?
+	num_of_albums = Album.objects.all()
+	album_count = num_of_albums.count()
 
-def review(request, pk):
-  review = Review.objects.get(id=pk)
-  added_reviews = review.addedreview_set.all()
+	# "Recent Activity" -- you can limit this with `[0:10]`
+	album_reviews = Review.objects.all()[0:5]
 
-  if request.method == 'POST':
-    added_review_form = AddedReview.objects.create(
-      user=request.user,
-      review=review,
-      body=request.POST.get('body'),
-      rating=request.POST.get('rating')
-    )
-    return redirect('review', pk=review.id)
-
-  highest_list = Review.objects.all().order_by('-rating')[0:5]
-
-  context = {
-    'review': review, 
-    'added_reviews': added_reviews,
-    'highest_list': highest_list
-  }
-  return render(request, 'base/review.html', context)
+	context = {
+		'albums': albums, 
+		'ratings_list': ratings_list, 
+		'album_count': album_count, 
+		'album_reviews': album_reviews
+		# 'page_obj': page_obj
+	}
+	return render(request, 'base/home.html', context)
 
 
-def userProfile(request, pk):
-  user = User.objects.get(id=pk)
-  reviews = user.review_set.all()
-  added_reviews = user.addedreview_set.all()
-  highest_list = Review.objects.all().order_by('-rating')[0:5]
+# for a specific album page
+def album(request, pk):
+	album = Album.objects.get(id=pk)
+	reviews = album.review_set.all()
 
-  context = {
-    'user': user, 
-    'reviews': reviews, 
-    'added_reviews': added_reviews, 
-    'highest_list': highest_list
-  }
-  return render(request, 'base/profile.html', context)
+	if request.method == 'POST':
+		review = Review.objects.create(
+			reviewer=request.user,
+			album=album,
+			comment=request.POST.get('comment'),
+			rating=request.POST.get('rating')
+		)
+		return redirect('album', pk=album.id)
+
+	ratings_list = Album.objects.annotate(
+		ratings_avg=Round(Cast((Sum('rating', distinct=True) + Sum('review__rating')), output_field=FloatField()) 
+			/ (Count('review__rating') + 1), precision=2)
+	).order_by('-ratings_avg')[0:5]
+
+	album_reviews = Review.objects.all()
+
+	context = {
+		'album': album, 
+		'reviews': reviews, 
+		'ratings_list': ratings_list, 
+		'album_reviews': album_reviews
+	}
+	return render(request, 'base/album.html', context) 
+
+
+def user_profile(request, pk):
+	user = User.objects.get(id=pk)
+	albums = user.album_set.all()
+
+	# *** CHANGE THESE TWO PARAMETERS IF YOU WANT TO SOLELY DISPLAY USER'S REVIEWS AND RATINGS ***
+	# the "Highest Rated" list
+	ratings_list = Album.objects.annotate(
+		ratings_avg=Round(Cast((Sum('rating', distinct=True) + Sum('review__rating')), output_field=FloatField()) 
+			/ (Count('review__rating') + 1), precision=2)
+	).order_by('-ratings_avg')[0:5]
+
+	# "Recent Activity" -- you can limit this with `[0:10]`
+	album_reviews = Review.objects.all()
+	# **********************************
+
+	context = {
+		'user': user, 
+		'albums': albums, 
+		'ratings_list': ratings_list,
+		'album_reviews': album_reviews
+	}
+	return render(request, 'base/profile.html', context)
+
+
+# the form for creating an album review
+@login_required(login_url='login')
+def create_album(request):
+	form = AlbumForm()
+
+	if request.method == 'POST':
+		form = AlbumForm(request.POST, request.FILES)
+		if form.is_valid():
+			album = form.save(commit=False)
+			album.creator = request.user
+			form.save()
+			return redirect('home')
+
+	context = {'form': form}
+	return render(request, 'base/album_form.html', context)
 
 
 @login_required(login_url='login')
-def createReview(request):
-  form = ReviewForm()
+def update_album(request, pk):
+	album = Album.objects.get(id=pk)
+	form = AlbumForm(instance=album)
 
-  if request.method == 'POST':
-    form = ReviewForm(request.POST)
-    if form.is_valid():
-      review = form.save(commit=False)
-      review.author = request.user
-      review.save()
-      return redirect('home')
+	if request.user != album.creator:
+		return HttpResponse('You do not have permission to edit this album.')
 
-  context = {'form': form}
-  return render(request, 'base/review_form.html', context)
+	if request.method == 'POST':
+		form = AlbumForm(request.POST, request.FILES, instance=album)
+		if form.is_valid():
+			form.save()
+			return redirect('home')
 
-
-@login_required(login_url='login')
-def updateReview(request, pk):
-  review = Review.objects.get(id=pk)
-  form = ReviewForm(instance=review)
-
-  if request.user != review.author:
-    return HttpResponse('You are not allowed here!')
-
-  if request.method == 'POST':
-    form = ReviewForm(request.POST, instance=review)
-    if form.is_valid():
-      form.save()
-      return redirect('home')
-
-  context = {'form': form}
-  return render(request, 'base/review_form.html', context)
+	context = {'form': form, 'album': album}
+	return render(request, 'base/album_form.html', context)
 
 
 @login_required(login_url='login')
-def deleteReview(request, pk):
-  review = Review.objects.get(id=pk)
+def delete_album(request, pk):
+	album = Album.objects.get(id=pk)
 
-  if request.user != review.author:
-    return HttpResponse('You are not allowed here!')
+	if request.user != album.creator:
+		return HttpResponse('You do not have permission to delete this album.')
 
-  if request.method == 'POST':
-    review.delete()
-    return redirect('home')
-  return render(request, 'base/delete.html', {'obj': review})
-
-
-@login_required(login_url='login')
-def deleteAddedReview(request, pk):
-  added_review = AddedReview.objects.get(id=pk)
-
-  if request.user != added_review.user:
-    return HttpResponse('You are not allowed here!')
-
-  if request.method == 'POST':
-    added_review.delete()
-    return redirect('home')
-  return render(request, 'base/delete.html', {'obj': added_review})
+	if request.method == 'POST':
+		album.delete()
+		return redirect('home')
+	return render(request, 'base/delete.html', {'obj': album})
 
 
 @login_required(login_url='login')
-def updateProfile(request):
-  user = request.user
-  form = UserForm(instance=user)
+def delete_review(request, pk):
+	review = Review.objects.get(id=pk)
 
-  if request.method == 'POST':
-    form = UserForm(request.POST, instance=user)
-    if form.is_valid():
-      form.save()
-      return redirect('user-profile', pk=user.id)
+	if request.user != review.reviewer:
+		return HttpResponse('You do not have permission to delete this review.')
 
-  return render(request, 'base/update_profile.html', {'form': form})
+	if request.method == 'POST':
+		review.delete()
+		return redirect('home')
+	return render(request, 'base/delete.html', {'obj': review})
+
+
+@login_required(login_url='login')
+def update_profile(request):
+	user = request.user
+	form = UserForm(instance=user)
+	
+	if request.method == 'POST':
+		form = UserForm(request.POST, request.FILES, instance=user)
+		if form.is_valid():
+			form.save()
+			return redirect('user-profile', pk=user.id)
+
+	return render(request, 'base/update_profile.html', {'form': form})
+
+
+def highest_rated(request):
+	albums = Album.objects.all()
+	reviews = Review.objects.all()
+
+	ratings_list = Album.objects.annotate(
+		ratings_avg=Round(Cast((Sum('rating', distinct=True) + Sum('review__rating')), output_field=FloatField()) 
+			/ (Count('review__rating') + 1), precision=2)
+	).order_by('-ratings_avg')[0:10]
+
+	context = {'albums': albums, 'reviews': reviews, 'ratings_list': ratings_list}
+
+	return render(request, 'base/highest_rated.html', context)
+
+
+def recent_activity(request):
+	album_reviews = Review.objects.all()[0:10]
+
+	return render(request, 'base/activity.html', {'album_reviews': album_reviews})
